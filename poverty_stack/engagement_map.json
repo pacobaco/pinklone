@@ -1,0 +1,9 @@
+# Example JSON structure for tracking low-income engagement value
+# {
+#     "open-edtech-platform": {
+#         "region": "Africa",
+#         "access_score": 9,
+#         "infrastructure_required": ["smartphones", "offline mode"],
+#         "freelance_monetization": true
+#     }
+# }
