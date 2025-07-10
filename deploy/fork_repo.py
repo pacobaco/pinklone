@@ -14,6 +14,10 @@ def fork_repo(repo_full_name, org=None):
 
     return fork.html_url
 
+def fork_repo(full_name, token):
+    g = Github(token)
+    repo = g.get_repo(full_name)
+    return repo.create_fork()
 
 def update_readme_with_dao(repo, dao_link):
     contents = repo.get_readme()
