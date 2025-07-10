@@ -8,7 +8,7 @@ from ranking.seo_vector_ranker import rank_repos
 from premium.upgrade_panel import upgrade_panel
 #from premium.tier_manager import is_premium, get_user_tier, get_credits, add_credits
 from deploy.fork_repo import fork_repo
-from dao.proposals import submit_proposal, get_proposals
+from dao.proposals import save_proposal, load_proposals
 from social.comments import get_comments, add_comment
 
 st.set_page_config(page_title="Pinklone DAO Forker", layout="wide")
