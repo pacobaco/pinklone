@@ -67,7 +67,13 @@ if st.button("Search Top Repos"):
 st.subheader("1. Ranked Open Source Projects")
 ranked_df = rank_repos('data/mit_repo_list.csv')
 st.dataframe(ranked_df[['name', 'url', 'seo_vector_score']].head(10))
-
+if st.button(f"✏️ Edit Description", key=f"edit_{i}"):
+    new_desc = st.text_area("Edit description", value=row["description"], key=f"desc_input_{i}")
+    if st.button("Update Description", key=f"update_{i}"):
+        df.loc[i, "description"] = new_desc
+        reranked = rank_repos_from_df(df)
+        st.success("🔁 Description updated and re-ranked")
+        st.experimental_rerun()
 st.subheader("2. DAO Voting Simulation")
 dao = DAOVoting()
 
