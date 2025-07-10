@@ -2,6 +2,15 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
 
+def rank_repos_from_df(df):
+    if df.empty:
+        return df
+
+    vectorizer = TfidfVectorizer(stop_words='english')
+    vectors = vectorizer.fit_transform(df['description'].fillna(""))
+    df["seo_score"] = vectors.sum(axis=1).A1
+    return df.sort_values("seo_score", ascending=False).reset_index(drop=True)
+
 def rank_repos(csv_path):
     df = pd.read_csv(csv_path)
     tfidf = TfidfVectorizer(stop_words='english', max_features=1000)
