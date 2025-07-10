@@ -1,125 +1,70 @@
+# streamlit_app.py
+
 import streamlit as st
-import os
-from dao.vote_manager import save_vote, count_votes
-import uuid
 import pandas as pd
-from dao.dao_simulation import DAOVoting
+
 from ranking.seo_vector_ranker import rank_repos
-import deploy.fork_repo as fr
-import streamlit as st
-from crawler.fetch_mit_repos import fetch_mit_repos_for_user
-from ranking.seo_vector_ranker import rank_repos_from_df
+from premium.upgrade_panel import upgrade_panel
+from premium.tier_manager import is_premium, get_user_tier, get_credits, add_credits
 from deploy.fork_repo import fork_repo
+from dao.proposals import submit_proposal, get_proposals
+from social.comments import get_comments, add_comment
 
-st.title("🧬 Pinklone: Fork-to-Impact Engine")
-token = st.secrets.get("GITHUB_TOKEN")
+st.set_page_config(page_title="Pinklone DAO Forker", layout="wide")
+st.title("🧬 Pinklone: DAO-powered MIT Repo Discovery")
 
-username = st.text_input("GitHub Username", placeholder="e.g. pacobaco")
+# Sidebar Account Info
+with st.sidebar:
+    st.header("👤 Account")
+    st.write(f"Tier: `{get_user_tier()}`")
+    st.write(f"Credits: `{get_credits()}`")
+    if st.button("🎁 Add Demo Credits"):
+        add_credits(5)
+    upgrade_panel()
 
-if st.button("Search and Rank"):
-    if not token:
-        st.error("Add GITHUB_TOKEN in Streamlit Secrets.")
-        st.stop()
+# Load Ranked Repos
+try:
+    ranked_df = rank_repos("data/mit_repo_list.csv")
+except Exception as e:
+    st.error(f"❌ Failed to load repo list: {e}")
+    st.stop()
 
-    df = fetch_mit_repos_for_user(username, token)
-    if df.empty:
-        st.warning("No MIT repos found.")
-    else:
-        ranked = rank_repos_from_df(df)
-        st.success(f"Ranked {len(ranked)} repos.")
-        for i, row in ranked.iterrows():
-            st.markdown(f"### {row['name']} ({row['stars']}⭐)")
-            st.markdown(row['description'])
-            st.markdown(f"[🔗 Repo Link]({row['url']})")
-            if st.button(f"Fork {row['name']}", key=f"fork_{i}"):
-                try:
-                    fork_repo(row['full_name'], token)
-                    st.success("✅ Forked!")
-                except Exception as e:
-                    st.error(f"❌ Fork failed: {e}")
+st.subheader("🏆 Ranked MIT Repos")
 
+for i, row in ranked_df.iterrows():
+    with st.expander(f"{i+1}. {row['name']}"):
+        st.write(row['description'])
+        st.write(f"🌐 [View Repo]({row['url']})")
 
-
-#import streamlit as st
-
-# Load token into environment
-os.environ["GITHUB_TOKEN"] = st.secrets["GITHUB_TOKEN"]
-
-st.markdown("""
-Discover high-value MIT-licensed open-source projects, vote on which to fork, and track impact potential.
-""")
-
-from crawler.search_and_save_mit_repos import search_mit_repos
-
-st.subheader("🌐 Search & Populate MIT Repo List")
-
-if st.button("Search Top Repos"):
-    with st.spinner("Searching GitHub..."):
-        token = st.secrets["GITHUB_TOKEN"]
-        df = search_mit_repos(token, max_pages=3)  # You can increase to 10+
-
-        if df is not None and not df.empty:
-            st.success(f"🎉 Found {len(df)} high-quality MIT repos.")
-            st.dataframe(df)
+        # Fork Button (Premium only)
+        if is_premium():
+            if st.button(f"🚀 Fork {row['name']}", key=f"fork_{i}"):
+                fork_repo(row['url'])
+                st.success("✅ Repo forked!")
         else:
-            st.warning("No qualifying repos found.")
+            st.warning("🔒 Forking requires Premium access.")
 
-st.subheader("1. Ranked Open Source Projects")
-ranked_df = rank_repos('data/mit_repo_list.csv')
-st.dataframe(ranked_df[['name', 'url', 'seo_vector_score']].head(10))
-if st.button(f"✏️ Edit Description", key=f"edit_{i}"):
-    new_desc = st.text_area("Edit description", value=row["description"], key=f"desc_input_{i}")
-    if st.button("Update Description", key=f"update_{i}"):
-        df.loc[i, "description"] = new_desc
-        reranked = rank_repos_from_df(df)
-        st.success("🔁 Description updated and re-ranked")
-        st.experimental_rerun()
-if row["freelancer_ready"]:
-    st.markdown("💼 **Freelancer Ready**")
-st.subheader("2. DAO Voting Simulation")
-dao = DAOVoting()
+        # Comments Section
+        st.markdown("**💬 Community Comments**")
+        comments = get_comments(row['url'])
+        for c in comments:
+            st.markdown(f"- 🗣 **{c['user']}**: {c['text']}")
+        new_comment = st.text_input("Leave a comment", key=f"comment_{i}")
+        if st.button("➕ Add Comment", key=f"btn_{i}"):
+            add_comment(row['url'], st.session_state.get("user_id", "anon"), new_comment)
 
-top_projects = ranked_df['name'].head(5).tolist()
-for project in top_projects:
-    dao.propose(project)
+# DAO Proposal Panel
+st.markdown("---")
+st.header("🏛 Submit a DAO Proposal")
 
-selected = st.selectbox("Vote for a project to fork:", top_projects)
-user = st.text_input("Your username:")
-weight = st.slider("Vote weight:", 1, 10, 1)
+with st.expander("📤 New Proposal"):
+    title = st.text_input("Proposal Title")
+    desc = st.text_area("Proposal Description")
+    if st.button("Submit Proposal"):
+        submit_proposal(title, desc, st.session_state.get("user_id", "anon"))
+        st.success("✅ Proposal submitted!")
 
-if st.button("Submit Vote"):
-    dao.vote(user, selected, weight)
-    st.success(f"Vote recorded for {selected} with weight {weight}")
-
-st.subheader("Voting Results")
-results = dao.results()
-results_df = pd.DataFrame(results, columns=['Project', 'Votes'])
-st.dataframe(results_df)
-
-st.subheader("3. Fork Top Candidate")
-
-if not results_df.empty:
-    top_winner = results_df.iloc[0]['Project']
-    if st.button(f"Fork '{top_winner}' on GitHub"):
-        full_name = ranked_df[ranked_df['name'] == top_winner].iloc[0]['url'].replace("https://github.com/", "")
-        forked_url = fr.fork_repo(full_name)
-        st.success(f"Forked at: {forked_url}")
-        
-
-
-for i, row in ranked.iterrows():
-    repo_id = str(uuid.uuid5(uuid.NAMESPACE_URL, row['url']))
-
-    st.markdown(f"### {row['name']} ({row['stars']}⭐)")
-    st.markdown(f"{row['description']}")
-    st.markdown(f"[🔗 Repo]({row['url']})")
-
-    col1, col2 = st.columns([2,1])
-    with col1:
-        if st.button("✅ Vote to Adopt", key=f"vote_{i}"):
-            voter = st.session_state.get("user", f"anon-{i}")
-            save_vote(repo_id, voter)
-            st.success("🗳️ Vote recorded.")
-
-    with col2:
-        st.markdown(f"🗳️ Votes: **{count_votes(repo_id)}**")
+st.subheader("🗳 Current Proposals")
+for p in get_proposals():
+    st.markdown(f"### 🗳 {p['title']}")
+    st.markdown(f"_{p['description']}_ — by `{p['user']}`")
