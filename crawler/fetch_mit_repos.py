@@ -2,6 +2,24 @@ from github import Github
 import csv
 import os
 
+def fetch_mit_repos_for_user(username, token):
+    g = Github(token)
+    user = g.get_user(username)
+    repos = user.get_repos()
+
+    mit_repos = []
+    for repo in repos:
+        if repo.license and repo.license.spdx_id == "MIT":
+            mit_repos.append({
+                "name": repo.name,
+                "full_name": repo.full_name,
+                "description": repo.description or "",
+                "url": repo.html_url,
+                "stars": repo.stargazers_count,
+                "updated": repo.updated_at.date().isoformat()
+            })
+    return pd.DataFrame(mit_repos)
+
 def fetch_mit_repos(token, output_path):
     g = Github(token)
     query = 'license:mit stars:>50 fork:true'
