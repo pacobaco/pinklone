@@ -1,4 +1,7 @@
 import streamlit as st
+import os
+from dao.vote_manager import save_vote, count_votes
+import uuid
 import pandas as pd
 from dao.dao_simulation import DAOVoting
 from ranking.seo_vector_ranker import rank_repos
@@ -36,8 +39,8 @@ if st.button("Search and Rank"):
                     st.error(f"❌ Fork failed: {e}")
 
 
-import os
-import streamlit as st
+
+#import streamlit as st
 
 # Load token into environment
 os.environ["GITHUB_TOKEN"] = st.secrets["GITHUB_TOKEN"]
@@ -93,3 +96,22 @@ if not results_df.empty:
         full_name = ranked_df[ranked_df['name'] == top_winner].iloc[0]['url'].replace("https://github.com/", "")
         forked_url = fr.fork_repo(full_name)
         st.success(f"Forked at: {forked_url}")
+        
+
+
+for i, row in ranked.iterrows():
+    repo_id = str(uuid.uuid5(uuid.NAMESPACE_URL, row['url']))
+
+    st.markdown(f"### {row['name']} ({row['stars']}⭐)")
+    st.markdown(f"{row['description']}")
+    st.markdown(f"[🔗 Repo]({row['url']})")
+
+    col1, col2 = st.columns([2,1])
+    with col1:
+        if st.button("✅ Vote to Adopt", key=f"vote_{i}"):
+            voter = st.session_state.get("user", f"anon-{i}")
+            save_vote(repo_id, voter)
+            st.success("🗳️ Vote recorded.")
+
+    with col2:
+        st.markdown(f"🗳️ Votes: **{count_votes(repo_id)}**")
