@@ -1,6 +1,6 @@
 streamlit
 pandas
-requests
 scikit-learn
-matplotlib
-PyGithub
+openai
+requests
+pygithub
