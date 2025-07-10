@@ -5,8 +5,7 @@ import pandas as pd
 #from premium.upgrade_panel import upgrade_panel
 from premium.tier_manager import is_premium, get_user_credit, add_credits
 from ranking.seo_vector_ranker import rank_repos
-from premium.upgrade_panel import upgrade_panel
-#from premium.tier_manager import is_premium, get_user_tier, get_credits, add_credits
+from premium.tier_manager import is_premium, get_user_credit, add_credits, get_user_tier #from premium.tier_manager import is_premium, get_user_tier, get_credits, add_credits
 from deploy.fork_repo import fork_repo
 from dao.proposals import save_proposal, load_proposals
 from social.comments import load_comments, save_comment
