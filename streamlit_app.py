@@ -2,7 +2,7 @@
 
 import streamlit as st
 import pandas as pd
-from premium.upgrade_panel import upgrade_panel
+#from premium.upgrade_panel import upgrade_panel
 
 from ranking.seo_vector_ranker import rank_repos
 from premium.upgrade_panel import upgrade_panel
