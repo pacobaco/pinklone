@@ -22,7 +22,7 @@ if user_id:
     user_id = st.text_input("Enter your username:", "guest")
 if user_id:
     st.write(f"Tier: `{get_user_tier(user_id)}`")
-    st.write(f"Credits: `{get_credits(user_id)}`")
+    st.write(f"Credits: `{get_user_credit(user_id)}`")
     if st.button("🎁 Add Demo Credits"):
         add_credits(5)
     upgrade_panel()
