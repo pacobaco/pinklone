@@ -74,6 +74,8 @@ if st.button(f"✏️ Edit Description", key=f"edit_{i}"):
         reranked = rank_repos_from_df(df)
         st.success("🔁 Description updated and re-ranked")
         st.experimental_rerun()
+if row["freelancer_ready"]:
+    st.markdown("💼 **Freelancer Ready**")
 st.subheader("2. DAO Voting Simulation")
 dao = DAOVoting()
 
