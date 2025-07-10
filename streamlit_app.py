@@ -6,6 +6,12 @@ import deploy.fork_repo as fr
 
 st.title("🔗 ForkStackDAO Dashboard")
 
+import os
+import streamlit as st
+
+# Load token into environment
+os.environ["GITHUB_TOKEN"] = st.secrets["GITHUB_TOKEN"]
+
 st.markdown("""
 Discover high-value MIT-licensed open-source projects, vote on which to fork, and track impact potential.
 """)
