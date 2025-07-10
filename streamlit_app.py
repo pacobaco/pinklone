@@ -5,7 +5,7 @@ import pandas as pd
 #from premium.upgrade_panel import upgrade_panel
 
 from ranking.seo_vector_ranker import rank_repos
-from premium.upgrade_panel import upgrade_panel
+#from premium.upgrade_panel import upgrade_panel
 from premium.tier_manager import is_premium, get_user_tier, get_credits, add_credits
 from deploy.fork_repo import fork_repo
 from dao.proposals import submit_proposal, get_proposals
