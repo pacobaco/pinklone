@@ -26,3 +26,11 @@ def add_credits(user_id, amount):
 
 def is_premium(user_id):
     return get_user_credit(user_id) >= 100  # Threshold for premium
+    
+def get_user_tier(user_id):
+    credits = get_user_credit(user_id)
+    if credits >= 100:
+        return "DAO+ Premium"
+    elif credits >= 50:
+        return "Contributor"
+    return "Free Tier"
