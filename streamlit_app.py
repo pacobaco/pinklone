@@ -65,7 +65,7 @@ with st.expander("📤 New Proposal"):
         submit_proposal(title, desc, st.session_state.get("user_id", "anon"))
         st.success("✅ Proposal submitted!")
 
-upgrade_panel()
+#upgrade_panel()
 st.subheader("🗳 Current Proposals")
 for p in get_proposals():
     st.markdown(f"### 🗳 {p['title']}")
