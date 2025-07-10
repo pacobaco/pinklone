@@ -10,6 +10,21 @@ st.markdown("""
 Discover high-value MIT-licensed open-source projects, vote on which to fork, and track impact potential.
 """)
 
+from crawler.search_and_save_mit_repos import search_mit_repos
+
+st.subheader("🌐 Search & Populate MIT Repo List")
+
+if st.button("Search Top Repos"):
+    with st.spinner("Searching GitHub..."):
+        token = st.secrets["GITHUB_TOKEN"]
+        df = search_mit_repos(token, max_pages=3)  # You can increase to 10+
+
+        if df is not None and not df.empty:
+            st.success(f"🎉 Found {len(df)} high-quality MIT repos.")
+            st.dataframe(df)
+        else:
+            st.warning("No qualifying repos found.")
+
 st.subheader("1. Ranked Open Source Projects")
 ranked_df = rank_repos('data/mit_repo_list.csv')
 st.dataframe(ranked_df[['name', 'url', 'seo_vector_score']].head(10))
