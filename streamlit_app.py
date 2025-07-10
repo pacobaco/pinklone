@@ -17,7 +17,9 @@ st.title("🧬 Pinklone: DAO-powered MIT Repo Discovery")
 # Sidebar Account Info
 with st.sidebar:
     st.header("👤 Account")
-    st.write(f"Tier: `{get_user_tier()}`")
+    user_id = st.text_input("Enter your username:", "guest")
+if user_id:
+    st.write(f"Tier: `{get_user_tier(user_id)}`")
     st.write(f"Credits: `{get_credits()}`")
     if st.button("🎁 Add Demo Credits"):
         add_credits(5)
