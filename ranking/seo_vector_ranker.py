@@ -7,11 +7,11 @@ freelancer_keywords = ["api", "dashboard", "cli", "tool", "app", "framework"]
 def is_freelancer_friendly(desc):
     return any(keyword in desc.lower() for keyword in freelancer_keywords)
 
-df["freelancer_ready"] = df["description"].apply(is_freelancer_friendly)
 
 def rank_repos_from_df(df):
     if df.empty:
         return df
+    df["freelancer_ready"] = df["description"].apply(is_freelancer_friendly)
 
     vectorizer = TfidfVectorizer(stop_words='english')
     vectors = vectorizer.fit_transform(df['description'].fillna(""))
