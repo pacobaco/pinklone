@@ -2,6 +2,7 @@
 
 import streamlit as st
 import pandas as pd
+from premium.upgrade_panel import upgrade_panel
 
 from ranking.seo_vector_ranker import rank_repos
 from premium.upgrade_panel import upgrade_panel
@@ -64,6 +65,7 @@ with st.expander("📤 New Proposal"):
         submit_proposal(title, desc, st.session_state.get("user_id", "anon"))
         st.success("✅ Proposal submitted!")
 
+upgrade_panel()
 st.subheader("🗳 Current Proposals")
 for p in get_proposals():
     st.markdown(f"### 🗳 {p['title']}")
