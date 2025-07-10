@@ -3,8 +3,38 @@ import pandas as pd
 from dao.dao_simulation import DAOVoting
 from ranking.seo_vector_ranker import rank_repos
 import deploy.fork_repo as fr
+import streamlit as st
+from crawler.fetch_mit_repos import fetch_mit_repos_for_user
+from ranking.seo_vector_ranker import rank_repos_from_df
+from deploy.fork_repo import fork_repo
 
-st.title("🔗 ForkStackDAO Dashboard")
+st.title("🧬 Pinklone: Fork-to-Impact Engine")
+token = st.secrets.get("GITHUB_TOKEN")
+
+username = st.text_input("GitHub Username", placeholder="e.g. pacobaco")
+
+if st.button("Search and Rank"):
+    if not token:
+        st.error("Add GITHUB_TOKEN in Streamlit Secrets.")
+        st.stop()
+
+    df = fetch_mit_repos_for_user(username, token)
+    if df.empty:
+        st.warning("No MIT repos found.")
+    else:
+        ranked = rank_repos_from_df(df)
+        st.success(f"Ranked {len(ranked)} repos.")
+        for i, row in ranked.iterrows():
+            st.markdown(f"### {row['name']} ({row['stars']}⭐)")
+            st.markdown(row['description'])
+            st.markdown(f"[🔗 Repo Link]({row['url']})")
+            if st.button(f"Fork {row['name']}", key=f"fork_{i}"):
+                try:
+                    fork_repo(row['full_name'], token)
+                    st.success("✅ Forked!")
+                except Exception as e:
+                    st.error(f"❌ Fork failed: {e}")
+
 
 import os
 import streamlit as st
