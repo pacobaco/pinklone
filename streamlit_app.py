@@ -23,8 +23,9 @@ if user_id:
 if user_id:
     st.write(f"Tier: `{get_user_tier(user_id)}`")
     st.write(f"Credits: `{get_user_credit(user_id)}`")
-    if st.button("🎁 Add Demo Credits"):
-        add_credits(5)
+    if st.button("Earn 10 Credits"):
+        add_credits(user_id, 10)
+        st.success("🎉 You've earned 10 credits!")
     upgrade_panel()
 
 # Load Ranked Repos
